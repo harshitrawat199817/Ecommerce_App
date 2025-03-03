@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Order;
 import com.example.demo.model.OrderItem;
+import com.example.demo.model.User;
 import com.example.demo.repository.JPA.OrderRepository;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,12 @@ public class OrderService {
     
     @Autowired
     private CartService cartService;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired 
+    private UserService userService;
 
     @Transactional
     public Order createOrder(String userId) {
@@ -45,7 +52,10 @@ public class OrderService {
         order.setStatus("PENDING");
         
         Order savedOrder = orderRepository.save(order);
+        
         cartService.clearCart(userId);
+        User user = userService.getUserById(userId);
+		emailService.sendOrderConfirmationEmail(user.getEmail(), user.getUsername());
         return savedOrder;
     }
 

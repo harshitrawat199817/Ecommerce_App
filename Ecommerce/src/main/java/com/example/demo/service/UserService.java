@@ -12,10 +12,13 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    
+    private final EmailService EmailService;
 
 	@Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+		this.EmailService = new EmailService();
     }
 
     /**
@@ -28,17 +31,15 @@ public class UserService {
 		if (userRepository.getUserByMobileNumber(user.getMobileNumber())==null) {
 			throw new RuntimeException("User with Mobile number already exists");
 		}
+		EmailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
         return userRepository.save(user);
     }
 
     /**
      * Retrieves a user by their ID.
      */
-    public Optional<User> getUserById(Long userId) {
-    	if (userRepository.findById(userId)==null) {
-			throw new RuntimeException("User not found");
-		}
-        return userRepository.findById(userId);
+    public User getUserById(String userId) {
+    	return userRepository.findUserById(userId).orElseThrow(()-> new RuntimeException("User not found"));
     }
 
     /**
